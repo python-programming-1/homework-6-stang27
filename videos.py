@@ -8,7 +8,7 @@ def get_video_data():
 
     vid_data = []
     with open('USvideos.csv', newline='') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in spamreader:
             if len(row) == 16:
                 vid_dict = {'video_id': row[0],
@@ -39,16 +39,49 @@ def print_data(data):
 
 def get_most_popular_and_least_popular_channel(data):
     """ fill in the Nones for the dictionary below using the vid data """
-    most_popular_and_least_popular_channel = {'most_popular_channel': None, 'least_popular_channel': None, 'most_pop_num_views': None,
-                                              'least_pop_num_views': None}
+    channels_and_views = {}
+    for video in data[1:]:
+    	channels_and_views.setdefault(video['channel_title'], 0)
+    	channels_and_views[video['channel_title']] += int(video['views'])
+    
+    most_popular_and_least_popular_channel = {'most_popular_channel': None, 'least_popular_channel': None, 'most_pop_num_views': 0,
+                                              'least_pop_num_views': float('Inf')}
+    for k,v in channels_and_views.items():
+    	if int(v) > most_popular_and_least_popular_channel['most_pop_num_views']:
+    		most_popular_and_least_popular_channel['most_popular_channel'] = k
+    		most_popular_and_least_popular_channel['most_pop_num_views'] = int(v)
+
+    for k,v in channels_and_views.items():
+    	if k == 'Unspecified':
+    		continue
+    	if int(v) < most_popular_and_least_popular_channel['least_pop_num_views']:
+    		most_popular_and_least_popular_channel['least_popular_channel'] = k
+    		most_popular_and_least_popular_channel['least_pop_num_views'] = v
 
     return most_popular_and_least_popular_channel
 
 
 def get_most_liked_and_disliked_channel(data):
     """ fill in the Nones for the dictionary below using the bar party data """
+    channels_and_likes = {}
+    channels_and_dislikes = {}
+    for video in data[1:]:
+    	channels_and_likes.setdefault(video['channel_title'], 0)
+    	channels_and_dislikes.setdefault(video['channel_title'], 0)
+    	channels_and_likes[video['channel_title']] += int(video['likes'])
+    	channels_and_dislikes[video['channel_title']] += int(video['dislikes'])
 
-    most_liked_and_disliked_channel = {'most_liked_channel': None, 'num_likes': None, 'most_disliked_channel': None, 'num_dislikes': None}
+    most_liked_and_disliked_channel = {'most_liked_channel': None, 'num_likes': 0, 'most_disliked_channel': None, 'num_dislikes': 0}
+
+    for k,v in channels_and_likes.items():
+    	if int(v) > most_liked_and_disliked_channel['num_likes']:
+    		most_liked_and_disliked_channel['most_liked_channel'] = k
+    		most_liked_and_disliked_channel['num_likes'] = int(v)
+
+    for k,v in channels_and_dislikes.items():
+    	if int(v) > most_liked_and_disliked_channel['num_dislikes']:
+    		most_liked_and_disliked_channel['most_disliked_channel'] = k
+    		most_liked_and_disliked_channel['num_dislikes'] = int(v)
 
     return most_liked_and_disliked_channel
 
@@ -57,11 +90,9 @@ if __name__ == '__main__':
     vid_data = get_video_data()
 
     # uncomment the line below to see what the data looks like
-    print_data(vid_data)
-
+    # print_data(vid_data)
+    
     popularity_metrics = get_most_popular_and_least_popular_channel(vid_data)
-
     like_dislike_metrics = get_most_liked_and_disliked_channel(vid_data)
-
     print('Popularity Metrics: {}'.format(popularity_metrics))
     print('Like Dislike Metrics: {}'.format(like_dislike_metrics))
